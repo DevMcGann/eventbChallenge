@@ -8,6 +8,7 @@ import com.bumptech.glide.Glide
 import com.eventbrite.androidchallenge.databinding.EventCardBinding
 import com.eventbrite.androidchallenge.domain.events.Event
 import com.eventbrite.androidchallenge.util.BaseViewHolder
+import com.eventbrite.androidchallenge.util.DateUtils
 
 class EventsAdapter (
     private val eventsList: List<Event>,
@@ -34,10 +35,11 @@ class EventsAdapter (
         val context: Context
     ) : BaseViewHolder<Event>(binding.root) {
         override fun bind(item: Event) {
+            val stringDate = DateUtils.getStringDate(item.startDate)
             Glide.with(context).load("${item.image?.url}")
                 .centerCrop().into(binding.imgEvent)
             binding.tvTitle.text = item.name
-            binding.tvStartDate.text = item.startDate.toString()
+            binding.tvStartDate.text = stringDate
         }
     }
 

@@ -10,6 +10,7 @@ import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.eventbrite.androidchallenge.R
 import com.eventbrite.androidchallenge.databinding.EventsFragmentBinding
+import com.eventbrite.androidchallenge.domain.events.Event
 import com.eventbrite.androidchallenge.util.Resource
 
 class EventsFragment : Fragment(R.layout.events_fragment) {
@@ -29,7 +30,6 @@ class EventsFragment : Fragment(R.layout.events_fragment) {
 
     private fun setView() {
        binding.rvEvents.apply {
-           adapter = eventAdapter
            layoutManager = LinearLayoutManager(requireActivity())
        }
     }
@@ -38,29 +38,37 @@ class EventsFragment : Fragment(R.layout.events_fragment) {
         viewModel.fetchEvents().observe(viewLifecycleOwner, Observer { result ->
             when (result) {
                 is Resource.Loading -> {
-                    binding.pbEvents.isVisible = true
-                    binding.imageView.isVisible = false
-                    binding.tvError.isVisible = false
+                   handleLoadingState()
                 }
                 is Resource.Success -> {
-                    binding.pbEvents.isVisible = false
-                    binding.imageView.isVisible = false
-                    binding.tvError.isVisible = false
-                    Log.d("DATAAAAA", result.data.toString())
-                    eventAdapter = EventsAdapter(
-                        result.data,
-                    )
-                    binding.rvEvents.adapter = eventAdapter
+                    handleSuccessState(result.data)
                 }
                 is Resource.Failure -> {
-                    binding.pbEvents.isVisible = false
-                    binding.imageView.isVisible = true
-                    binding.tvError.isVisible = true
-                    Log.d("Error", "${result.exception}")
+                   handleFailState(result.exception)
                 }
             }
         })
     }
 
+    private fun handleLoadingState(){
+        binding.pbEvents.isVisible = true
+        binding.imageView.isVisible = false
+        binding.tvError.isVisible = false
+    }
+
+    private fun handleSuccessState(data: List<Event>){
+        binding.pbEvents.isVisible = false
+        binding.imageView.isVisible = false
+        binding.tvError.isVisible = false
+        eventAdapter = EventsAdapter(data)
+        binding.rvEvents.adapter = eventAdapter
+    }
+
+    private fun handleFailState(e:Exception){
+        binding.pbEvents.isVisible = false
+        binding.imageView.isVisible = true
+        binding.tvError.isVisible = true
+        Log.d("Error", "$e")
+    }
 
 }
