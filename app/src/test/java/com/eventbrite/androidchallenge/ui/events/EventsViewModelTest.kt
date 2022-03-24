@@ -37,8 +37,6 @@ class EventsViewModelTest {
     @get:Rule val instantTaskExecutorRule = InstantTaskExecutorRule()
 
     private val dispatcher = UnconfinedTestDispatcher()
-    lateinit var viewModel : EventsViewModel
-    lateinit var repository: EventsRepository
 
     val eventList = listOf<Event>(
         Event("a", "name", Date()),
@@ -47,12 +45,10 @@ class EventsViewModelTest {
 
     val error = Exception()
 
+
     @Before
     fun setup() {
         Dispatchers.setMain(dispatcher)
-        repository = EventsRepository()
-        viewModel = EventsViewModel(repository)
-
     }
 
     @After
@@ -63,36 +59,29 @@ class EventsViewModelTest {
 
     @Test
     fun `getUiStateWhenResponseIsSuccessful`() = runTest(dispatcher){
-            Mockito.`when`(repository.getOrganizerEvents())
+        val eventsRepository = mock<EventsRepository>()
+        val viewModel = EventsViewModel(eventsRepository = eventsRepository)
+            Mockito.`when`(eventsRepository.getOrganizerEvents())
                 .thenReturn(eventList)
 
-           val result =  viewModel.fetchEvents().getOrAwaitValue()
+        val data =  viewModel.fetchEvents().getOrAwaitValue()
+        val success = Resource.Success(data)
+        assert(success.data != null)
+
+    }
+
+    @Test
+    fun `getUiStateWhenResponseHasFailed`() = runTest(dispatcher){
+        val eventsRepository = mock<EventsRepository>()
+        val viewModel = EventsViewModel(eventsRepository = eventsRepository)
+        Mockito.`when`(eventsRepository.getOrganizerEvents())
+            .thenReturn(emptyList())
+        val error = Resource.Failure(error)
+        assert(error != null)
+
     }
 
 
 }
 
 
-
-
-/*
-@get:Rule val instantTaskExecutorRule = InstantTaskExecutorRule()
-
-private val dispatcher = UnconfinedTestDispatcher()
-
-@Before
-fun setup() {
-    Dispatchers.setMain(dispatcher)
-}
-
-@After
-fun teardown() {
-    Dispatchers.resetMain()
-}
-
-@Test
-fun template() = runTest(dispatcher) {
-    val eventsRepository = mock<EventsRepository>()
-
-    val viewModel = EventsViewModel(eventsRepository = eventsRepository)
-}*/
